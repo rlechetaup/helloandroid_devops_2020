@@ -1,0 +1,57 @@
+name: Fastlane Deploy
+
+on:
+  workflow_dispatch
+  push:
+#    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: Set up Ruby 2.6
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.6.x
+
+    - name: Setup Android
+      run: |
+        echo "init android"
+        echo $ANDROID_KEYSTORE_FILE | base64 -d > app/hello.keystore
+        echo $FIREBASE_SERVICE_ACCOUNT_FILE | base64 -d > app/firebase-service-account-key.json
+        echo $GOOGLEPLAY_SERVICE_ACCOUNT_FILE | base64 -d > app/google-service-account-key.json
+      env:
+        ANDROID_KEYSTORE_FILE: ${{ secrets.ANDROID_KEYSTORE_FILE }}
+        FIREBASE_SERVICE_ACCOUNT_FILE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FILE }}
+        GOOGLEPLAY_SERVICE_ACCOUNT_FILE: ${{ secrets.GOOGLEPLAY_SERVICE_ACCOUNT_FILE }}
+
+    - name: Fastlane Install
+      run: gem install bundler && bundle install
+
+    - name: Lint & Test
+      run: bundle exec fastlane test
+
+    - name: Build
+      run: |
+        bundle exec fastlane build
+        git config --global user.email "srockytfl@gmail.com"
+        git config --global user.name "srockytfl"
+        git add app/version.properties
+        git add fastlane/report.xml
+        git commit -m "Update version [skip ci]"
+        git push
+
+    - name: Firebase
+      run: bundle exec fastlane firebase
+
+    - name: Google Play Internal
+      run: bundle exec fastlane internal

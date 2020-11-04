@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">HelloUP</string>
+    <string name="ok">OK</string>
+    <string name="hello_world">Hello World!</string>
+    <string name="hint_login">Digite o login</string>
+    <string name="hint_senha">Digite a senha</string>
+    <string name="alert_title">UP</string>
+    <!-- M -->
+    <string name="msg_login_empty">Informe os dados</string>
+    <string name="msg_login_empty2">Informe todos os dados</string>
+    <string name="login">Login</string>
+    <string name="senha">Senha</string>
+    <string name="login_title">App Teste</string>
+</resources>

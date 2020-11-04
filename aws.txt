@@ -1,0 +1,20 @@
+aws devicefarm create-upload --region us-west-2 --project-arn arn:aws:devicefarm:us-west-2:724365302558:project:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d --name app-debug.apk --type ANDROID_APP
+
+arn:aws:devicefarm:us-west-2:724365302558:upload:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/388df244-2383-4557-9b74-a26960db7498
+
+curl -T app/build/outputs/apk/debug/app-debug.apk "https://prod-us-west-2-uploads.s3-us-west-2.amazonaws.com/arn%3Aaws%3Adevicefarm%3Aus-west-2%3A724365302558%3Aproject%3A7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/uploads/arn%3Aaws%3Adevicefarm%3Aus-west-2%3A724365302558%3Aupload%3A7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/388df244-2383-4557-9b74-a26960db7498/app-debug.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20201104T005302Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJSORV74ENYFBITRQ%2F20201104%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Signature=4ec1cf3980508e0e0b3c74b3d7179698ef10365c1f250f9cf23ffdc862f3a5ad"
+
+
+aws devicefarm get-upload --region us-west-2  --arn arn:aws:devicefarm:us-west-2:724365302558:upload:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/388df244-2383-4557-9b74-a26960db7498
+
+
+aws devicefarm create-upload --region us-west-2 --project-arn arn:aws:devicefarm:us-west-2:724365302558:project:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d --name app-debug-androidTest.apk --type INSTRUMENTATION_TEST_PACKAGE
+
+
+curl -T app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk "https://prod-us-west-2-uploads.s3-us-west-2.amazonaws.com/arn%3Aaws%3Adevicefarm%3Aus-west-2%3A724365302558%3Aproject%3A7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/uploads/arn%3Aaws%3Adevicefarm%3Aus-west-2%3A724365302558%3Aupload%3A7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/8c571ab5-000b-4f05-8c49-41ffe870b9b3/app-debug-androidTest.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20201104T005956Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJSORV74ENYFBITRQ%2F20201104%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Signature=fad94224e75bba4742c4e2731ae7e9e244956c2ccd95a73d751be5dc409ab6dd"
+
+
+aws devicefarm get-upload --region us-west-2 --arn arn:aws:devicefarm:us-west-2:724365302558:upload:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/8c571ab5-000b-4f05-8c49-41ffe870b9b3
+
+
+aws devicefarm schedule-run --region us-west-2 --project-arn arn:aws:devicefarm:us-west-2:724365302558:project:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d --app-arn arn:aws:devicefarm:us-west-2:724365302558:upload:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/388df244-2383-4557-9b74-a26960db7498 --device-pool-arn arn:aws:devicefarm:us-west-2:724365302558:devicepool:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/ba270b14-6a32-49fd-9936-4913483b96b6 --name MyTestRun --test type=INSTRUMENTATION,testPackageArn=arn:aws:devicefarm:us-west-2:724365302558:upload:7a3e6039-6ad5-4c67-a4ed-4e2cef9eeb1d/8c571ab5-000b-4f05-8c49-41ffe870b9b3

@@ -1,0 +1,50 @@
+name: Gradle Deploy
+
+on:
+  workflow_dispatch
+#  push:
+#    branches: [ develop ]
+#  pull_request:
+#    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: Setup Android
+      run: |
+        echo "init android"
+        echo $ANDROID_KEYSTORE_FILE | base64 -d --ignore-garbage > app/hello.keystore
+        echo $FIREBASE_SERVICE_ACCOUNT_FILE | base64 -d > app/firebase-service-account-key.json
+        echo $GOOGLEPLAY_SERVICE_ACCOUNT_FILE | base64 -d > app/google-service-account-key.json
+      env:
+        ANDROID_KEYSTORE_FILE: ${{ secrets.ANDROID_KEYSTORE_FILE }}
+        FIREBASE_SERVICE_ACCOUNT_FILE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FILE }}
+        GOOGLEPLAY_SERVICE_ACCOUNT_FILE: ${{ secrets.GOOGLEPLAY_SERVICE_ACCOUNT_FILE }}
+
+    - name: Lint & Test
+      run: ./gradlew lint test
+
+    - name: Build
+      run: |
+        ./gradlew assembleRelease
+#        git config --global user.email "rlecheta@gmail.com"
+#        git config --global user.name "rlecheta"
+#        git add app/version.properties
+#        git commit -m "Update version [skip ci]"
+#        git push
+
+    - name: Firebase
+      run: ./gradlew appDistributionUploadRelease
+
+    - name: Google Play Internal
+      run: ./gradlew publishReleaseApk

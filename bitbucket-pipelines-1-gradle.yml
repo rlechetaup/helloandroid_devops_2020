@@ -1,0 +1,86 @@
+image: livetouch/android-build-box:latest
+
+pipelines:
+  branches:
+    master:
+
+      - step:
+          name: Lint & Test
+          caches:
+            - gradle
+            - gradle-wrapper
+          script:
+            - echo $ANDROID_KEYSTORE_FILE | base64 -d > app/hello.keystore
+            - cp -r . /tmp
+            - bundle update fastlane
+            - fastlane install_plugins
+            - bundle install
+            - bundle exec fastlane test
+          artifacts:
+            - app/build/output/apk/**
+            - app/build/reports/**
+
+      - step:
+          name: Build
+          caches:
+            - gradle
+            - gradle-wrapper
+          script:
+            - echo $ANDROID_KEYSTORE_FILE | base64 -d > app/hello.keystore
+            - cp -r . /tmp
+            - bundle update fastlane
+            - fastlane install_plugins
+            - bundle install
+            - bundle exec fastlane build
+            - git add app/version.properties
+            - git commit -m "Update version [skip ci]"
+            - git push
+          artifacts:
+            - app/build/outputs/apk/**
+
+      - step:
+          name: Publish to Firebase
+          deployment: Firebase
+          caches:
+            - gradle
+            - gradle-wrapper
+          script:
+            - echo $ANDROID_KEYSTORE_FILE | base64 -d > app/hello.keystore
+            - echo $FIREBASE_SERVICE_ACCOUNT_FILE | base64 -d > app/firebase-service-account-key.json
+            - cp -r . /tmp
+            - bundle update fastlane
+            - fastlane install_plugins
+            - bundle install
+            - bundle exec fastlane firebase
+
+      - step:
+          name: Publish to Internal
+          deployment: Internal
+          caches:
+            - gradle
+            - gradle-wrapper
+          script:
+            - echo $ANDROID_KEYSTORE_FILE | base64 -d > app/hello.keystore
+            - echo $GOOGLEPLAY_SERVICE_ACCOUNT_FILE | base64 -d > app/google-service-account-key.json
+            - cp -r . /tmp
+            - bundle update fastlane
+            - fastlane install_plugins
+            - bundle install
+            - bundle exec fastlane google
+
+      - step:
+          name: Promote Internal to Alpha
+          deployment: Alpha
+          trigger: manual
+          caches:
+            - gradle
+            - gradle-wrapper
+          script:
+            - echo $ANDROID_KEYSTORE_FILE | base64 -d > app/hello.keystore
+            - echo $GOOGLEPLAY_SERVICE_ACCOUNT_FILE | base64 -d > app/google-service-account-key.json
+            - ./gradlew promoteArtifact --promote-track alpha
+
+definitions:
+  caches:
+    fastlane: /usr/local/bin/fastlane
+    gradle-wrapper: ~/.gradle/wrapper

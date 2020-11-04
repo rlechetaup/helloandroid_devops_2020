@@ -1,0 +1,68 @@
+image: livetouch/android-build-box:latest
+
+cache:
+  paths:
+    - .gradle/
+    - ~/.gradle/wrapper/
+
+stages:
+  - lint
+  - test
+  - build
+  - firebase
+  - internal
+  - alpha
+
+lint:
+  stage: lint
+  script:
+    - ./gradlew lint
+  artifacts:
+    paths:
+      - app/build/reports/**
+
+test:
+  stage: test
+  script:
+    - ./gradlew test
+  artifacts:
+    paths:
+      - app/build/tests/**
+
+build:
+  stage: build
+  script:
+    - echo $ANDROID_KEYSTORE_FILE | base64 -d > hello.keystore
+    - ./gradlew assembleRelease
+  artifacts:
+    paths:
+      - app/build/tests/**
+      - app/build/reports/tests/**
+      - app/build/outputs/apk/release/app-release.apk
+
+firebase:
+  stage: firebase
+  environment:
+    name: Firebase
+  script:
+    - echo $ANDROID_KEYSTORE_FILE | base64 -d > hello.keystore
+    - echo $FIREBASE_SERVICE_ACCOUNT_FILE | base64 -d > firebase-service-account-key.json
+    - ./gradlew publishReleaseApk
+
+internal:
+  stage: internal
+  environment:
+    name: Internal
+  script:
+    - echo $ANDROID_KEYSTORE_FILE | base64 -d > hello.keystore
+    - echo $GOOGLEPLAY_SERVICE_ACCOUNT_FILE | base64 -d > service-account-key.json
+    - ./gradlew publishReleaseApk
+
+alpha:
+  stage: alpha
+  environment:
+    name: Alpha
+  script:
+    - echo $ANDROID_KEYSTORE_FILE | base64 -d > hello.keystore
+    - echo $GOOGLEPLAY_SERVICE_ACCOUNT_FILE | base64 -d > service-account-key.json
+    - ./gradlew promoteArtifact --promote-track alpha

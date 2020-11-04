@@ -1,0 +1,95 @@
+default_platform(:android)
+
+versionCode = get_version_code()
+
+platform :android do
+
+   desc "Increment Version Code"
+   lane :incrementVersionNumber do
+     puts "current version_code: #{versionCode}"
+     increment_version_code()
+     versionCode = get_version_code()
+     #puts "new version_code: #{versionCode}"
+     #git_commit(path: "app/build.gradle", message: "Fastlane Version Bump [skip ci]")
+     #push_to_git_remote
+   end
+
+   desc "Lint"
+   lane :lint do
+      gradle(task:"lint")
+   end
+
+   desc "Test"
+   lane :test do
+       gradle(task:"test")
+   end
+
+   desc "Compilar o apk - release"
+   lane :build do
+
+       #incrementVersionNumber
+
+       build_android_app(
+           task: "assemble",
+           build_type: "release",
+       )
+   end
+
+   desc "Deploy to Firebase Distribution"
+   lane :firebase do
+
+       build
+
+       firebase_app_distribution(
+           app: "1:724510310635:android:f1b83eeebac580968abeae",
+           groups: "users",
+           service_credentials_file: "app/firebase-service-account-key.json",
+           #apk_path: lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH],
+           apk_path: "./app/build/outputs/apk/release/app-release.apk",
+           release_notes_file: "app/firebasedist-releasenotes.txt"
+       )
+   end
+
+   desc "AppCenter"
+   lane :app_center do
+
+        build
+
+        appcenter_upload(
+          api_token: "865b073ca9b31086681403f479afa84144d13997",
+          owner_name: "rlechetaup",
+          owner_type: "user",
+          app_name: "HelloAndroid",
+          file: lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH],
+          notify_testers: true,
+          destinations: "Collaborators",
+          release_notes: "Teste fastlane com appcenter"
+        )
+   end
+
+   desc "Deploy a new version to the Google Play"
+   lane :internal do
+
+       #https://docs.fastlane.tools/actions/upload_to_play_store/
+       upload_to_play_store(
+           track:"internal",
+           skip_upload_apk: false,
+           skip_upload_aab: true,
+           skip_upload_metadata: true,
+           skip_upload_images: true,
+           skip_upload_screenshots: true,
+           skip_upload_changelogs: true,
+           timeout: 600,
+           apk: "./app/build/outputs/apk/release/app-release.apk"
+       )
+   end
+
+   desc "Firebase & Google"
+   lane :all do
+      #lint
+      #test
+      build
+      firebase
+      internal
+   end
+end
